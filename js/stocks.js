@@ -16,8 +16,8 @@
 
 let stocks = await Promise.all([
     d3.csv("data/AAPL.csv").then(data => ({ name: "AAPL", values: data })),
-    // TODO: Load GOOG.csv with name "GOOG"
-    // TODO: Load AMZN.csv with name "AMZN"
+    d3.csv("data/GOOG.csv").then(data => ({ name: "GOOG", values: data })),
+    d3.csv("data/AMZN.csv").then(data => ({ name: "AMZN", values: data }))
 ]);
 
 console.log("Loaded stocks:", stocks);
@@ -39,6 +39,19 @@ stocks.forEach(stock => {
         
         // TODO: Convert these additional fields to numbers
         // d.Open, d.High, d.Low, d.Volume
+
+        stocks.forEach(stock => {
+        stock.values.forEach(d => {
+            d.Date = new Date(d.Date);
+            d.Close = +d.Close;
+            d.Open = +d.Open;
+            d.High = +d.High;
+            d.Low = +d.Low;
+            d.Volume = +d.Volume;
+    });
+
+    stock.values.sort((a, b) => a.Date - b.Date);
+});
     });
 
     // TODO: Sort stock.values by date (oldest to newest)
@@ -101,7 +114,7 @@ const y = d3.scaleLinear()
 // Color Scale - Maps stock names to colors
 // TODO: Create an ordinal color scale
 // Hint: d3.scaleOrdinal(d3.schemeCategory10).domain(mapping goes here)
-const color = /* TODO: Your code here */;
+const color = /* TODO: Your code here */
 
 
 // ============================================================================

@@ -15,9 +15,9 @@
 // d3.selectAll() finds ALL elements (like querySelectorAll)
 
 d3.select('#demo-1')
-    .style('color', 'blue')
+    .style('color', 'green')
     .style('font-size', '20px')
-    .text('This text was changed by D3!');
+    .text('This text was changed by Monica Whalen');
 
 // TODO: change the text above to add your name
 // TODO: change the color to something else you like // keep in mind color contrast
@@ -25,10 +25,16 @@ d3.select('#demo-1')
 
 // Create and append new elements
 d3.select('#demo-1')
-    .append('p')
+    .append('p') // append a paragraph
     .text('This paragraph was created by D3')
     .style('background-color', 'lightgray');
 
+d3.select('#demo-1')
+    .append('p')
+    .text('My favorite food is spaghetti')
+    .style('background-color', 'purple')
+    .style('color', 'white')
+    ;
 // TODO: append a new element with your favorite food and style it with a different background color
 
 // ============================================================================
@@ -40,13 +46,13 @@ d3.select('#demo-1')
 // To demonstrate that we will first load the data (we'll cover it in Section 4)
 
 // Sample data - gas prices in 5 states chosen randomly. 
-const energyData = await d3.csv('data/state_energy_prices.csv');
-const sampledData = energyData.filter(d => ['California','Texas','New York','Illinois','Michigan'].includes(d.state));
-const gasPrices = sampledData.map(item => parseFloat(item.gas));
+const energyData = await d3.csv('data/state_energy_prices.csv'); // load data
+const sampledData = energyData.filter(d => ['California','Texas','New York','Illinois','Michigan'].includes(d.state)); // only use data from these states
+const gasPrices = sampledData.map(item => parseFloat(item.gas)); // gasPrices data 
 
 // Now let's see how we bind this data to elements
 d3.select('#demo-2')
-    .append('svg')
+    .append('svg') // add the canvas (SVG)
     .attr('width', 400) // Set width of the SVG
     .attr('height', 100) // Set height of the SVG
     .selectAll('circle') // Select circles (we don't have them yet) - we select circles that don't exist yet to tell D3 what kind of elements to create
@@ -59,8 +65,21 @@ d3.select('#demo-2')
 
 
 // TODO: sample electricity prices instead of gas and create rectangles instead of circles; make the color of the rectangles green;
-const electricityPrices = sampledData.map(item => parseFloat(item.elec));
+const electricityPrices = sampledData.map(item => parseFloat(item.elec)); //electricityPrices data
 // YOUR CODE GOES HERE 
+d3.select('#demo-2')
+    .append('svg')
+    .attr('width', 400)
+    .attr('height', 100)
+    .selectAll('rect')
+    .data(electricityPrices)
+    .join('rect')
+    .attr('x', (d, i) => i*25+30)
+    .attr('y', d => 100 - d*50)
+    .attr('width', 20)
+    .attr('height', d => d*100)
+    .attr('fill', 'green');
+
 
 // Remember that circle needs radius (r) and center (cx, cy) to create it,
 // while rectangles need x, y, width, and height. You can use the electricity price to determine the height of the rectangle and set a fixed width.
@@ -107,8 +126,8 @@ let top15 = energyData.slice(0, 15); // Get top 15 states
 top15 = top15.map(d => ({ state: d.state, elec: parseFloat(d.elec) })); // Convert electricity price to number and keep only state and electricity
 
 // Now let's set the dimensions for our bar chart
-const barMargin = { top: 30, right: 30, bottom: 80, left: 70 };
-const barWidth = 700 - barMargin.left - barMargin.right;
+const barMargin = { top: 30, right: 30, bottom: 80, left: 70 }; //pixel values for screen margins 
+const barWidth = 700 - barMargin.left - barMargin.right; // canvas is 700 pixels wide, but the bars only take up some of that space
 const barHeight = 380 - barMargin.top - barMargin.bottom;
 
 // Create SVG for bar chart
@@ -116,7 +135,7 @@ const barSvg = d3.select('#demo-4')
     .append('svg')
     .attr('viewBox', `0 0 ${barWidth + barMargin.left + barMargin.right} ${barHeight + barMargin.top + barMargin.bottom}`)
     .attr('preserveAspectRatio', 'xMidYMid meet')
-    .append('g')
+    .append('g') // append group to canvas. Everything after this is added as a child attribute of the group
     .attr('transform', `translate(${barMargin.left},${barMargin.top})`);
 
 // We are using viewBox here, which allows the SVG to scale responsively while maintaining the aspect ratio. 
@@ -141,7 +160,7 @@ const yBar = d3.scaleLinear()
 // Create axes and append them to the svg
 
 // X axis
-const xAxis = d3.axisBottom(xBarScale);
+const xAxis = d3.axisBottom(xBarScale); // add X scale to X axis
 
 barSvg.append('g')
     .attr('transform', `translate(0, ${barHeight})`) // Move x axis to the bottom of the chart
@@ -151,7 +170,7 @@ barSvg.append('g')
     .style('text-anchor', 'end');
 
 // Y axis
-const yAxis = d3.axisLeft(yBar)
+const yAxis = d3.axisLeft(yBar) // add Y scale to Y axis
     .ticks(5)
     .tickFormat(d => `$${d.toFixed(2)}`); // Set number of ticks on y axis
 
@@ -202,15 +221,54 @@ const hBarHeight = 500 - hBarMargin.top - hBarMargin.bottom;
 
 // Create SVG for horizontal bar chart
 
+const hbarSvgGas = d3.select('#demo-4')
+    .append('svg')
+    .attr('viewBox', `0 0 ${hBarWidth + hBarMargin.left + hBarMargin.right} ${hBarHeight + hBarMargin.top + hBarMargin.bottom}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .append('g') // append group to canvas. Everything after this is added as a child attribute of the group
+    .attr('transform', `translate(${hBarMargin.left}, ${hBarMargin.top})`);
 
 // Create scales for the horizontal bar chart
+// X scale - linear scale for gas prices
+const xGasScale = d3.scaleLinear()
+    .domain([0, d3.max(top15Gas, d => d.gas)]) // Input: gas prices from 0 to max 
+    .range([0, hBarWidth]); // Output: width of the chart
+
+ // Y scale - categorical scale for state names
+const yGasScale = d3.scaleBand()
+    .domain(top15Gas.map(d => d.state))
+    .range([0, hBarHeight])
+    .padding(0.25);
 
 
 // Create axes and append them to the svg
+const xAxisGas = d3.axisBottom(xGasScale)
+    .ticks(5)
+    .tickFormat(d => `$${d.toFixed(2)}`);
 
+hbarSvgGas.append('g')
+    .attr('transform', `translate(0, ${hBarHeight})`)
+    .call(xAxisGas);
+
+const yAxisGas = d3.axisLeft(yGasScale);
+
+hbarSvgGas.append('g')
+    .call(yAxisGas)
+    .attr('transform', 'translate(0, 0)') // position y-axis to the left
+    .selectAll('text')
+    .attr('text-anchor', 'end')
+    .style('font-size', '12px');
 
 // Create and append bars to the chart
-
+hbarSvgGas.selectAll('rect')
+    .data(top15Gas)
+    .join('rect')
+    .attr('x', 1)
+    .attr('y', d=> yGasScale(d.state)) // Set y position based on state
+    .attr('width', d => xGasScale(d.gas))
+    .attr('height', yGasScale.bandwidth())
+    .attr('fill', 'orange')
+    .attr('class', 'rotated-bar-chart');
 
 // Chart title
 
